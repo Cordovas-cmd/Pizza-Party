@@ -51,6 +51,25 @@ const handlePizzaSubmit = event => {
   }
 
   const formData = { pizzaName, createdBy, size, toppings };
+
+
+  //  What we've done here is POST the formData object to the API. We've simply added an alert() if it's successfully created, as we don't know what Pizza Hunt has in store for this functionality yet.
+  fetch('/api/pizzas', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(formData)
+  })
+    .then(response => response.json())
+    .then(postResponse => {
+      alert('Pizza created successfully!');
+      console.log(postResponse);
+    })
+    .catch(err => {
+      console.log(err);
+    });
 };
 
 $pizzaForm.addEventListener('submit', handlePizzaSubmit);
