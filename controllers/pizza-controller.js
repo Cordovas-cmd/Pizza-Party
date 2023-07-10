@@ -7,34 +7,49 @@ const { db } = require('../models/Pizza');
  which will actually handle either one or multiple inserts!
 */
 const pizzaController = {
-      // the functions will go in here as methods
+    // the functions will go in here as methods
 
-      // get all pizzas (callback function for the GET /api/pizzas)
-      getAllPizza(req, res) {
+    // get all pizzas (callback function for the GET /api/pizzas)
+    getAllPizza(req, res) {
         Pizza.find({})
-        .then(dbPizzaData => res.json (dbPizzaData))
-        .catch(err => {
-            console.log(err);
-            res.status(400).json(err);
-        });
-      },
+
+            /*To populate a field, just chain the .populate() method onto your query, passing in an object with the key path plus the value of the field you want populated.*/
+            .populate({
+                path: 'comments',
+                /* we also used the select option inside of populate(), so that we can tell Mongoose that we don't care about the __v field on comments either. The minus sign - in front of the field indicates that we don't want it to be returned. */
+                select: '-__v'
+            })
+            // sorts the order of the pizzas from newest to oldest
+            .select('-__v')
+            .sort({ _id: -1 })
+            .then(dbPizzaData => res.json(dbPizzaData))
+            .catch(err => {
+                console.log(err);
+                res.status(400).json(err);
+            });
+    },
 
     //   get one pizza by id 
     getPizzaById({ params }, res) {
-        Pizza.findOne({ _id: params.id})
-        .then(dbPizzaData => {
-            // if no pizza is found, send a 404
-            if(!dbPizzaData) {
+        Pizza.findOne({ _id: params.id })
+            .populate({
+                path: 'comments',
+                select: '-__v'
+            })
+            .select('-__v')
+            .then(dbPizzaData => {
+                // if no pizza is found, send a 404
+                if (!dbPizzaData) {
+                    console.log(err);
+                    res.status(404).json({ message: 'No pizza found with this id' });
+                    return;
+                }
+                res.json(dbPizzaData);
+            })
+            .catch(err => {
                 console.log(err);
-                res.status(404).json({message: 'No pizza found with this id' });
-                return;
-            }
-            res.json(dbPizzaData);
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(400).json(err);
-        });
+                res.status(400).json(err);
+            });
     },
 
     //Create custom Pizza
@@ -42,8 +57,8 @@ const pizzaController = {
     // we destructure the body out of the Express.js req object 
     createPizza({ body }, res) {
         Pizza.create(body)
-        .then(dbPizzaData => res.json(dbPizzaData))
-        .catch(err => res.status(400).json(err));
+            .then(dbPizzaData => res.json(dbPizzaData))
+            .catch(err => res.status(400).json(err));
     },
 
 
@@ -58,15 +73,15 @@ const pizzaController = {
 
 
     updatePizza({ params, body }, res) { //method for updating a pizza when we make a request to PUT /api/pizzas/:id
-        Pizza.findOneAndUpdate({_id: params.id }, body, { new: true})
-        .then(dbPizzaData => {
-            if(!dbPizzaData) {
-                res.status(404).json({ message: 'No pizza found with this id, BUMMER!' });
-                return;
-            }
-            res.json(dbPizzaData);
-        })
-        .catch(err => res.status(400).json(err));
+        Pizza.findOneAndUpdate({ _id: params.id }, body, { new: true })
+            .then(dbPizzaData => {
+                if (!dbPizzaData) {
+                    res.status(404).json({ message: 'No pizza found with this id, BUMMER!' });
+                    return;
+                }
+                res.json(dbPizzaData);
+            })
+            .catch(err => res.status(400).json(err));
     },
 
 
@@ -75,15 +90,15 @@ const pizzaController = {
     // method to delete a pizza from the database when we make a request to DELETE /api/pizzas/:id
     deletePizza({ params }, res) {
         Pizza.findOneAndDelete({ _id: params.id })
-          .then(dbPizzaData => {
-            if (!dbPizzaData) {
-              res.status(404).json({ message: 'No pizza found with this id!' });
-              return;
-            }
-            res.json(dbPizzaData);
-          })
-          .catch(err => res.status(400).json(err));
-      }
+            .then(dbPizzaData => {
+                if (!dbPizzaData) {
+                    res.status(404).json({ message: 'No pizza found with this id!' });
+                    return;
+                }
+                res.json(dbPizzaData);
+            })
+            .catch(err => res.status(400).json(err));
+    }
 }
 
 
