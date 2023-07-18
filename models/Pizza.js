@@ -1,5 +1,5 @@
 // create a schema, using the Schema constructor we imported from Mongoose, and define the fields with specific data types
-
+const dateFormat = require('../utils/dateFormat');
 
 const { Schema, model } = require('mongoose');
 
@@ -17,6 +17,7 @@ const PizzaSchema = new Schema ({
     createdAt: {
         type: Date,
         default: Date.now,
+        // use getters to transform the data by default every time it's queried.
         get: (createdAtVal) => dateFormat(createdAtVal)
     },
     size: {
@@ -41,6 +42,7 @@ const PizzaSchema = new Schema ({
 {
     toJSON: {
       virtuals: true,
+      getters: true
     },
     // We set id to false because this is a virtual that Mongoose returns, and we don’t need it.
     id: false
@@ -49,12 +51,20 @@ const PizzaSchema = new Schema ({
 
 //  Side Note:  Virtuals allow us to add more information to a database response so that we don't have to add in the information manually with a helper before responding to the API request.
 // get total count of comments and replies on retrieval
-PizzaSchema.virtual('commentCount').get(function() {
-    return this.comments.length;
-  });
 
+  PizzaSchema.virtual('commentCount').get(function() {
+    /* reduce() method to tally up the total of every comment with its replies. In its basic form,
+     .reduce() takes two parameters, an accumulator and a currentValue.
+     As .reduce() walks through the array, it passes the accumulating total and the current value of comment into the function,
+      with the return of the function revising the total for the next iteration through the array.*/
+    return this.comments.reduce((total, comment) => total + comment.replies.length + 1, 0);
+  });
 // create the Pizza model using the PizzaSchema
 const Pizza = model('Pizza', PizzaSchema);
 
 // export the Pizza model
 module.exports = Pizza;
+
+
+
+// REF FOR REDUCE: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce
