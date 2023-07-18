@@ -9,6 +9,35 @@ const $newCommentForm = document.querySelector('#new-comment-form');
 
 let pizzaId;
 
+function getPizza() {
+  const searchParams = new URLSearchParams(document.location.search.substring(1));
+
+  const pizzaId = searchParams.get('id');
+
+  // get pizza info 
+  fetch(`/api/pizzas/${pizzaId}`)
+  .then(response => {
+    if(!response.ok){
+            // check for a 4xx or 5xx error from server
+      throw new Error({message: 'Something went wrong!'})
+    }
+    console.log(response);
+    return response.json();
+  })
+  .then(printPizza)
+  /*add a .catch() so that any error takes the user back to the home page, using the window.history.back() method.*/
+  .catch(err => {
+    console.log(err);
+    alert('Cannot find a pizza with this id! Taking you back to homepage.');
+
+
+    /* REF: The window history API exposes methods that let us control the state of the browser's session. 
+    As long as this particular browser session has a previous page, 
+    it will behave as if the user had clicked on the "Back" button.*/
+    window.history.back();
+  });
+}
+
 function printPizza(pizzaData) {
   console.log(pizzaData);
 
@@ -87,6 +116,31 @@ function handleNewCommentSubmit(event) {
   }
 
   const formData = { commentBody, writtenBy };
+
+  // set up the front end reuqest type and properties/params
+  fetch(`/api/comments/${pizzaId}`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application.json',
+      'Content-Type': 'application/json'
+    },
+    // turn into json object so the server can read data
+    body: JSON.stringify(formData)
+  })
+  .then(response => {
+    if(!response.ok) {
+      throw new Error('Something went wrong!');
+    }
+    response.json();
+  })
+  // refresh the page and show the updated comment after server responds.
+  .then(commentResponse => {
+    console.log(commentResponse);
+    location.reload();
+  })
+  .catch(err => {
+    console.log(err);
+  });
 }
 
 function handleNewReplySubmit(event) {
@@ -111,6 +165,6 @@ function handleNewReplySubmit(event) {
 $backBtn.addEventListener('click', function() {
   window.history.back();
 });
-
+getPizza();
 $newCommentForm.addEventListener('submit', handleNewCommentSubmit);
 $commentSection.addEventListener('submit', handleNewReplySubmit);
