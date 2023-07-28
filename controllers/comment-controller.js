@@ -28,12 +28,12 @@ const commentController = {
       },
 
 
-      // add reply 
+      // add reply (because it exists inside commendt. )
       addReply({ params, body }, res) {
         Comment.findOneAndUpdate(
           // add the reply to the correct comment
           { _id: params.commentId },
-          // push the body of the reply to the empty reply array
+          // push the body of the reply to the empty reply array can also use $addToSet (works the same as push except avoids duplicates) to avoid duplicates
           { $push: { replies: body } },
           { new: true }
         )
