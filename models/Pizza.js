@@ -9,10 +9,18 @@ const PizzaSchema = new Schema ({
     pizzaName: {
 
         //  Simply instruct the schema that this data will adhere to the built-in JavaScript data types, including strings, Booleans, numbers, and so on.
-        type: String
+        type: String,
+        // validation
+        required: true,
+        // Works just like the JavaScript .trim() method
+        trim: true
     },
     createdBy: {
-        type: String
+        type: String,
+        // validation
+        required: true,
+        // Works just like the JavaScript .trim() method
+        trim: true
     },
     createdAt: {
         type: Date,
@@ -22,6 +30,8 @@ const PizzaSchema = new Schema ({
     },
     size: {
         type: String,
+        //  enum = enumerable, a popular term in web development that refers to a set of data that can be iterated over
+        enum: ['Personal', 'Small', 'Medium', 'Large', 'Extra Large'],
         default: "Large"
     },
     toppings: [],
